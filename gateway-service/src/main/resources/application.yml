@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+  cloud:
+    gateway:
+      routes:
+        - id: identity-service-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+
+        - id: product-service-route
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/products/**
+
+app:
+  jwt:
+    secret: "vS6K5vH8N2zB4xR9mQ3pL1wT7yC5vH8N2zB4xR9mQ3pL1wT7yC5vH8N2z"
