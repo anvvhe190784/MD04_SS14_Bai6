@@ -8,8 +8,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -18,17 +17,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProperties jwtProperties;
+    private final CustomJwtAuthenticationConverter authenticationConverter;
 
-    public JwtAuthenticationFilter(JwtProperties jwtProperties) {
+    public JwtAuthenticationFilter(JwtProperties jwtProperties,
+                                   CustomJwtAuthenticationConverter authenticationConverter) {
         this.jwtProperties = jwtProperties;
+        this.authenticationConverter = authenticationConverter;
     }
 
     @Override
@@ -46,39 +45,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         .parseClaimsJws(token)
                         .getBody();
 
-                String username = claims.getSubject();
-                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-
-                // Map roles (ví dụ ["ROLE_ADMIN"] hoặc ["ADMIN"])
-                Object rolesObj = claims.get("roles");
-                if (rolesObj instanceof Collection<?> roles) {
-                    for (Object role : roles) {
-                        if (role != null) {
-                            String roleStr = role.toString();
-                            authorities.add(new SimpleGrantedAuthority(roleStr));
-                            if (!roleStr.startsWith("ROLE_")) {
-                                authorities.add(new SimpleGrantedAuthority("ROLE_" + roleStr));
-                            }
-                        }
-                    }
-                }
-
-                // Map permissions (hỗ trợ cho PBAC Bài 6)
-                Object permissionsObj = claims.get("permissions");
-                if (permissionsObj instanceof Collection<?> permissions) {
-                    for (Object perm : permissions) {
-                        if (perm != null) {
-                            authorities.add(new SimpleGrantedAuthority(perm.toString()));
-                        }
-                    }
-                }
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
+                // Sử dụng CustomJwtAuthenticationConverter để chuyển đổi claims thành Authentication object
+                AbstractAuthenticationToken authentication = authenticationConverter.convert(claims);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (Exception e) {
-                // Token invalid hoặc expired -> Không set SecurityContextHolder
                 SecurityContextHolder.clearContext();
             }
         }
