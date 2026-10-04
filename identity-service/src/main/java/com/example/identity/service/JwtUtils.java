@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -35,6 +34,7 @@ public class JwtUtils {
                 .setSubject(user.getUsername())
                 .claim("userId", user.getId())
                 .claim("roles", user.getRoles())
+                .claim("permissions", user.getPermissions())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(signingKey, SignatureAlgorithm.HS256)

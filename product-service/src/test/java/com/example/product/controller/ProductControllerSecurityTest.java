@@ -36,6 +36,7 @@ class ProductControllerSecurityTest {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
+                .claim("permissions", List.of("PRODUCT_READ"))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 60000))
                 .signWith(key, SignatureAlgorithm.HS256)

@@ -24,6 +24,11 @@ public class User {
     @Column(name = "role")
     private Set<String> roles = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_permissions", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "permission")
+    private Set<String> permissions = new HashSet<>();
+
     public User() {
     }
 
@@ -31,6 +36,13 @@ public class User {
         this.username = username;
         this.password = password;
         this.roles = roles;
+    }
+
+    public User(String username, String password, Set<String> roles, Set<String> permissions) {
+        this.username = username;
+        this.password = password;
+        this.roles = roles;
+        this.permissions = permissions;
     }
 
     public Long getId() {
@@ -63,6 +75,14 @@ public class User {
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+
+    public Set<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<String> permissions) {
+        this.permissions = permissions;
     }
 
     @Override

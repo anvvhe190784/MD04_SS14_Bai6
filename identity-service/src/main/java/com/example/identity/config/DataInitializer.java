@@ -16,10 +16,20 @@ public class DataInitializer {
     public CommandLineRunner initData(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             if (!userRepository.existsByUsername("admin")) {
-                userRepository.save(new User("admin", passwordEncoder.encode("password"), Set.of("ROLE_ADMIN", "ROLE_USER")));
+                userRepository.save(new User(
+                        "admin",
+                        passwordEncoder.encode("password"),
+                        Set.of("ROLE_ADMIN", "ROLE_USER"),
+                        Set.of("PRODUCT_READ", "PRODUCT_CREATE")
+                ));
             }
             if (!userRepository.existsByUsername("user")) {
-                userRepository.save(new User("user", passwordEncoder.encode("password"), Set.of("ROLE_USER")));
+                userRepository.save(new User(
+                        "user",
+                        passwordEncoder.encode("password"),
+                        Set.of("ROLE_USER"),
+                        Set.of("PRODUCT_READ")
+                ));
             }
         };
     }
