@@ -1,6 +1,7 @@
 package com.example.identity.controller;
 
 import com.example.identity.dto.LoginRequest;
+import com.example.identity.dto.RefreshRequest;
 import com.example.identity.dto.TokenResponse;
 import com.example.identity.model.RefreshToken;
 import com.example.identity.model.User;
@@ -44,5 +45,11 @@ public class AuthController {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         return ResponseEntity.ok(new TokenResponse(accessToken, refreshToken.getToken()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refresh(@RequestBody RefreshRequest refreshRequest) {
+        TokenResponse response = refreshTokenService.refreshToken(refreshRequest.refreshToken());
+        return ResponseEntity.ok(response);
     }
 }
