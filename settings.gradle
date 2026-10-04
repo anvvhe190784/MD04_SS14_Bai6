@@ -1,0 +1,4 @@
+rootProject.name = 'MD04_SS14'
+include 'identity-service'
+include 'product-service'
+include 'gateway-service'

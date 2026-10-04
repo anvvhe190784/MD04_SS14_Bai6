@@ -1,0 +1,48 @@
+package com.example.identity.controller;
+
+import com.example.identity.dto.LoginRequest;
+import com.example.identity.dto.TokenResponse;
+import com.example.identity.model.RefreshToken;
+import com.example.identity.model.User;
+import com.example.identity.repository.UserRepository;
+import com.example.identity.service.JwtUtils;
+import com.example.identity.service.RefreshTokenService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
+    private final RefreshTokenService refreshTokenService;
+
+    public AuthController(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtUtils jwtUtils,
+                          RefreshTokenService refreshTokenService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
+        this.refreshTokenService = refreshTokenService;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.username())
+                .orElse(null);
+
+        if (user == null || !passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        }
+
+        String accessToken = jwtUtils.generateAccessToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+        return ResponseEntity.ok(new TokenResponse(accessToken, refreshToken.getToken()));
+    }
+}
